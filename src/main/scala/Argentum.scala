@@ -4,17 +4,16 @@ import java.util.Calendar
 import java.util.Calendar._
 import java.text.SimpleDateFormat
 
-class Calendario(calendar: Calendar) {
+class Calendario(calendar: Calendar) extends Ordered[Calendario] {
   import Calendario._
 
   private val _calendario:Calendar = calendar.clone.asInstanceOf[Calendar]
 
   def calendario:Calendar = _calendario.clone.asInstanceOf[Calendar]
 
-  def mesmoDia(calendario: Calendario): Boolean = Calendario.mesmoDia(this, calendario)
-
   override def toString = formatter.format(_calendario.getTime)
-  
+
+  def compare(that: Calendario) = this._calendario.compareTo(that._calendario)
 }
 
 object Calendario {
@@ -26,12 +25,6 @@ object Calendario {
   }
   
   implicit def calendarioToCalendar(c: Calendario): Calendar = c.calendario
-
-  def mesmoDia(calendario1: Calendario, calendario2: Calendario): Boolean = {
-    calendario1.get(DAY_OF_MONTH) == calendario2.get(DAY_OF_MONTH) &&
-    calendario1.get(MONTH) == calendario2.get(MONTH) &&
-    calendario1.get(YEAR) == calendario2.get(YEAR)
-  }
 
 }
 
@@ -54,44 +47,32 @@ class Candlestick(val abertura: Double, val fechamento: Double, val minimo: Doub
 
   def alta = abertura < fechamento
   def baixa = !alta
+  override def toString = "(abertura %f, fechamento %f, minimo %f, maximo %f, volume %f, data: %s)" format (abertura, fechamento, minimo, maximo, volume, data)
 }
 
 object Candlestick {
   import Calendario._
-  import ArgentumUtil._
   def candlestick(negocios: List[Negocio]): Candlestick =
     negocios match {
       case Nil => new Candlestick(abertura = 0.0, fechamento = 0.0, minimo = 0.0, maximo = 0.0, volume = 0.0, Calendar.getInstance)
       case lista =>
-        val maior = lista.reduceLeft((n1, n2) => (if (n1.preco >= n2.preco) n1 else n2))
-        val menor = lista.reduceLeft((n1, n2) => (if (n1.preco >= n2.preco) n2 else n1))
-        val volume = lista.foldLeft(0.0)((acc: Double, n: Negocio) => (acc + n.volume))
+        val maiorPreco = lista.map(_.preco).max
+        val menorPreco = lista.map(_.preco).min
+        val volume = lista.map(_.volume).sum
         new Candlestick(
           abertura = lista.head.preco,
           fechamento = lista.last.preco,
-          minimo = menor.preco,
-          maximo = maior.preco,
+          minimo = menorPreco,
+          maximo = maiorPreco,
           volume = volume,
           data = lista.head.data)
     }
 
   def candlesticks(negocios: List[Negocio]): List[Candlestick] = {
-    agrupa(negocios, 
-	   (n1:Negocio, n2:Negocio) => mesmoDia(n1.data, n2.data)
-	 ).map(candlestick)
+    def dia(n: Negocio) = (n.data.get(DAY_OF_MONTH), n.data.get(MONTH), n.data.get(YEAR))
+    val candlesticks = negocios.groupBy(dia).map{case (_, negociosNoDia) => candlestick(negociosNoDia)}.toList
+    candlesticks.sortBy(_.data)
   }
 
 }
 
-object ArgentumUtil {
-  def agrupa[A](lista: List[A], condicao: (A, A) => Boolean): List[List[A]] = {
-    def _agrupa[A](lista: List[A], condicao: (A, A) => Boolean, acc: List[List[A]]): List[List[A]] =
-      lista match {
-        case List() => acc
-        case cabeca :: cauda =>
-          val (grupo, restante) = lista.span(candidato => condicao(cabeca, candidato))
-          _agrupa(restante, condicao, grupo :: acc)
-      }
-    _agrupa(lista, condicao, List[List[A]]()).reverse
-  }
-}

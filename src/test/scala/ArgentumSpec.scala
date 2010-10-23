@@ -49,12 +49,6 @@ class ArgentumSpec extends Spec with ShouldMatchers {
       candle.volume should be(4050.0 plusOrMinus EPS)
     }
 
-    it("Deve saber se duas datas sao do mesmo dia") {
-      val data1 = new GregorianCalendar(2010, 7, 13, 10, 20)
-      val data2 = new GregorianCalendar(2010, 7, 13, 8, 20)
-      mesmoDia(data1, data2) should equal(true)
-    }
-
     it("Deve saber criar candles com negocios do mesmo dia") {
       val hoje = getInstance
       val amanha = hoje.clone.asInstanceOf[Calendar]
@@ -73,6 +67,7 @@ class ArgentumSpec extends Spec with ShouldMatchers {
         Nil
       val candles = candlesticks(negocios)
       candles.size should equal(3)
+      println(candles)
       candles(0).abertura should be(40.5 plusOrMinus EPS)
       candles(0).fechamento should be(42.3 plusOrMinus EPS)
       candles(1).abertura should be(48.8 plusOrMinus EPS)
