@@ -7,13 +7,14 @@ import java.text.SimpleDateFormat
 class Calendario(calendar: Calendar) extends Ordered[Calendario] {
   import Calendario._
 
-  private val _calendario:Calendar = calendar.clone.asInstanceOf[Calendar]
+  private val _calendario: Calendar = calendar.clone.asInstanceOf[Calendar]
 
-  def calendario:Calendar = _calendario.clone.asInstanceOf[Calendar]
+  def calendario: Calendar = _calendario.clone.asInstanceOf[Calendar]
 
   override def toString = formatter.format(_calendario.getTime)
 
   def compare(that: Calendario) = this._calendario.compareTo(that._calendario)
+
 }
 
 object Calendario {
@@ -23,8 +24,10 @@ object Calendario {
     require(calendar != null)
     new Calendario(calendar)
   }
-  
+
   implicit def calendarioToCalendar(c: Calendario): Calendar = c.calendario
+
+  def dia(n: Negocio) = (n.data.get(DAY_OF_MONTH), n.data.get(MONTH), n.data.get(YEAR))
 
 }
 
@@ -35,6 +38,7 @@ class Negocio(val preco: Double, val quantidade: Int, val data: Calendario) {
 
   def volume = preco * quantidade
   override def toString = data.toString
+ 
 }
 
 class Candlestick(val abertura: Double, val fechamento: Double, val minimo: Double, val maximo: Double, val volume: Double, val data: Calendario) {
@@ -69,8 +73,9 @@ object Candlestick {
     }
 
   def candlesticks(negocios: List[Negocio]): List[Candlestick] = {
-    def dia(n: Negocio) = (n.data.get(DAY_OF_MONTH), n.data.get(MONTH), n.data.get(YEAR))
-    val candlesticks = negocios.groupBy(dia).map{case (_, negociosNoDia) => candlestick(negociosNoDia)}.toList
+    val candlesticks = negocios.groupBy(dia).map {
+      case (_, negociosNoDia) => candlestick(negociosNoDia)
+    }.toList
     candlesticks.sortBy(_.data)
   }
 
