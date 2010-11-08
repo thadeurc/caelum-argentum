@@ -3,6 +3,7 @@ package br.com.caelum.fj16.argentum
 import java.util.Calendar
 import java.util.Calendar._
 import java.text.SimpleDateFormat
+import java.io.OutputStream
 
 class Calendario(calendar: Calendar) extends Ordered[Calendario] {
   import Calendario._
@@ -41,7 +42,12 @@ class Negocio(val preco: Double, val quantidade: Int, val data: Calendario) {
  
 }
 
-class Candlestick(val abertura: Double, val fechamento: Double, val minimo: Double, val maximo: Double, val volume: Double, val data: Calendario) {
+class Candlestick(val abertura: Double, 
+		  val fechamento: Double, 
+		  val minimo: Double, 
+		  val maximo: Double, 
+		  val volume: Double, 
+		  val data: Calendario) {
   require(abertura >= 0.0)
   require(fechamento >= 0.0)
   require(minimo >= 0.0)
@@ -51,14 +57,20 @@ class Candlestick(val abertura: Double, val fechamento: Double, val minimo: Doub
 
   def alta = abertura < fechamento
   def baixa = !alta
-  override def toString = "(abertura %f, fechamento %f, minimo %f, maximo %f, volume %f, data: %s)" format (abertura, fechamento, minimo, maximo, volume, data)
+  override def toString = "(abertura %f, fechamento %f, minimo %f, maximo %f, volume %f, data: %s)" format 
+			   (abertura, fechamento, minimo, maximo, volume, data)
 }
 
 object Candlestick {
   import Calendario._
   def candlestick(negocios: List[Negocio]): Candlestick =
     negocios match {
-      case Nil => new Candlestick(abertura = 0.0, fechamento = 0.0, minimo = 0.0, maximo = 0.0, volume = 0.0, Calendar.getInstance)
+      case Nil => new Candlestick(abertura = 0.0, 
+				  fechamento = 0.0, 
+				  minimo = 0.0, 
+				  maximo = 0.0, 
+				  volume = 0.0, 
+				  Calendar.getInstance)
       case lista =>
         val maiorPreco = lista.map(_.preco).max
         val menorPreco = lista.map(_.preco).min
@@ -80,4 +92,5 @@ object Candlestick {
   }
 
 }
+
 
